@@ -34,6 +34,10 @@ ENV/
 .env
 .env.local
 
+# FIRMS Runtime Cache
+backend/data/cache/
+*.csv.cache
+
 # IDEs
 .idea/
 .vscode/

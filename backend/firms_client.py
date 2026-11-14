@@ -76,12 +76,28 @@ REGION_BOUNDS: Dict[str, Dict[str, Any]] = {
 DATA_DIR = Path(__file__).resolve().parent / "data"
 CACHE_DIR = DATA_DIR / "cache"
 
+def _load_env_file():
+    for candidate in [Path.cwd() / ".env", Path(__file__).resolve().parent.parent / ".env", Path(__file__).resolve().parent / ".env"]:
+        if candidate.exists():
+            try:
+                with open(candidate, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line = line.strip()
+                        if line and not line.startswith("#") and "=" in line:
+                            k, v = line.split("=", 1)
+                            os.environ.setdefault(k.strip(), v.strip().strip("'\""))
+            except Exception:
+                pass
+            break
+
+_load_env_file()
+
 
 class FirmsClient:
     """NASA FIRMS API integration with intelligent offline fallback caching."""
 
     def __init__(self, map_key: Optional[str] = None):
-        self.map_key = map_key or os.getenv("FIRMS_MAP_KEY", "46bcd8c8eed1f12d19b06fb86343426a").strip()
+        self.map_key = map_key or os.getenv("FIRMS_MAP_KEY", "").strip()
         DATA_DIR.mkdir(parents=True, exist_ok=True)
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
