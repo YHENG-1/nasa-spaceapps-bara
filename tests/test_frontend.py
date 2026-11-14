@@ -1,24 +1,19 @@
 import os
-import re
 
 def test_frontend_files():
     files = ['index.html', 'Bara — MODIS & VIIRS 3D Fire Observatory.html']
     required_ids = [
-        'regionSelect', 'btnOpenAoiModal', 'aoiModal',
-        'inputAoiNorth', 'inputAoiWest', 'inputAoiEast', 'inputAoiSouth',
-        'btnApplyAoi', 'btnCancelAoi', 'btnCloseAoiModal',
-        'btnAoiFromCurrentMap', 'btnMapCaptureAoi',
-        'backendStatusBadge', 'backendStatusDot', 'backendStatusLabel',
-        'btnExportCsv', 'chkHarmonized', 'chkModis', 'chkViirs',
-        'btnModeHarmonized', 'btnModeRaw', 'btnView3D', 'btnView2D',
-        'btnBasemapDark', 'btnBasemapSat', 'btnRampThermal', 'btnRampViridis',
-        'confidenceFilter', 'kpiHarmonized', 'kpiAnomaly', 'kpiRawTotal',
-        'kpiRawSplit', 'kpiFrp', 'calendarContainer', 'comparisonChart',
-        'hotspotTableBody', 'aoiCoordsLabel', 'mapSubtitle', 'pipelineModal',
-        # UI/UX Pro Max HUD Elements
-        'hudActiveClusters', 'hudCumulativeFrp', 'hudBurnArea', 'hudSensorConsensus',
-        'btnOpenShortcuts', 'keyboardModal', 'btnCloseKeyboardModal', 'btnKeyboardGotIt',
-        'btnHighContrast'
+        'globeCanvas', 'embers', 'regionSelect',
+        'btnModeHarmonized', 'btnModeRaw', 'btnPipelineModal', 'btnExportCsv',
+        'toastBanner', 'toastMessage', 'btnCloseToast',
+        'aoiCoordsLabel', 'btnView3D', 'btnView2D', 'map2dWrapper',
+        'mapSubtitle', 'btnBasemapDark', 'btnBasemapSat', 'fireMap',
+        'chkHarmonized', 'chkModis', 'chkViirs',
+        'kpiPeriodBadge', 'kpiHarmonized', 'kpiAnomaly', 'kpiMedianSub',
+        'kpiRawTotal', 'kpiRawSplit', 'kpiFrp',
+        'btnRampThermal', 'btnRampViridis', 'calendarContainer', 'legendBar',
+        'calendarSelectedInfo', 'chartSubtitle', 'comparisonChart',
+        'confidenceFilter', 'hotspotTableBody', 'pipelineModal', 'btnCloseModal'
     ]
 
     for fname in files:
@@ -29,23 +24,22 @@ def test_frontend_files():
         missing = [elem_id for elem_id in required_ids if f'id="{elem_id}"' not in content]
         assert not missing, f"Missing IDs in {fname}: {missing}"
 
-        # Check endpoints and fallback
+        # Check endpoints and API integrations
         assert 'window.API_BASE' in content, f"window.API_BASE missing in {fname}"
         assert '/api/calendar' in content, f"/api/calendar missing in {fname}"
         assert '/api/hotspots' in content, f"/api/hotspots missing in {fname}"
         assert '/api/export' in content, f"/api/export missing in {fname}"
-        assert '/api/health' in content, f"/api/health missing in {fname}"
-        assert 'customBbox' in content, f"customBbox missing in {fname}"
-        assert 'updateAoiBoundingBoxDisplay' in content, f"updateAoiBoundingBoxDisplay missing in {fname}"
         assert 'update3DHotspots' in content, f"update3DHotspots missing in {fname}"
+        assert 'renderCalendar' in content, f"renderCalendar missing in {fname}"
+        assert 'renderChart' in content, f"renderChart missing in {fname}"
+        assert 'renderTable' in content, f"renderTable missing in {fname}"
 
-        # Check UI/UX Pro Max HUD styling and sensor palettes
-        assert 'Exo 2' in content, f"Exo 2 font missing in {fname}"
-        assert 'JetBrains Mono' in content, f"JetBrains Mono font missing in {fname}"
-        assert '#F59E0B' in content, f"MODIS electric amber palette missing in {fname}"
-        assert '#10B981' in content, f"VIIRS neon emerald palette missing in {fname}"
-        assert '#EF4444' in content, f"Harmonized plasma flame palette missing in {fname}"
-        assert 'pattern-mode' in content, f"Colorblind pattern mode missing in {fname}"
+        # Check typography, palettes & UI polish items
+        assert 'Bricolage Grotesque' in content, f"Bricolage Grotesque missing in {fname}"
+        assert 'DM Sans' in content, f"DM Sans missing in {fname}"
+        assert 'Space Mono' in content, f"Space Mono missing in {fname}"
+        assert '--ember: #FF5A1F' in content, f"Ember palette missing in {fname}"
+        assert 'cal-val' in content, f"Calendar heatmap number de-noising missing in {fname}"
 
     # Verify both files are strictly identical
     with open(files[0], 'r', encoding='utf-8') as f1, open(files[1], 'r', encoding='utf-8') as f2:

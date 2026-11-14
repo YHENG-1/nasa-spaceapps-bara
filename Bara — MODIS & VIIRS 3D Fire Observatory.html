@@ -296,8 +296,19 @@
                 outline-color 0.16s ease,
                 box-shadow 0.16s ease;
     cursor: pointer;
-    border-radius: 6px;
+    border-radius: 4px;
     outline: 1.5px solid transparent;
+    position: relative;
+  }
+  .heatmap-cell .cal-val {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    pointer-events: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .heatmap-cell:hover .cal-val,
+  .heatmap-cell.selected .cal-val {
+    opacity: 1;
   }
   .heatmap-cell:hover {
     transform: scale(1.22) rotate(-2deg);
@@ -361,7 +372,7 @@
 
   <!-- ══════════ HEADER ══════════ -->
   <header class="relative z-20 border-b border-[#3A2B23]/70 bg-[#0C0806]/80 backdrop-blur-xl">
-    <div class="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6">
+    <div class="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-3 px-6 py-3">
 
       <div class="flex items-center gap-3">
         <div class="logo-badge">
@@ -405,7 +416,7 @@
   </header>
 
   <!-- ══════════ MAIN ══════════ -->
-  <main class="pointer-events-none relative z-10 mx-auto max-w-[1440px] space-y-4 px-4 py-4 sm:px-6">
+  <main class="pointer-events-none relative z-10 mx-auto max-w-[1440px] space-y-4 px-6 py-5">
 
     <!-- Toast -->
     <div id="toastBanner"
@@ -452,32 +463,30 @@
         <div id="globeSpacer" class="hidden min-h-[260px] lg:block"></div>
 
         <!-- Layers -->
-        <div class="panel pointer-events-auto flex flex-wrap items-center justify-between gap-3 rounded-[18px] px-4 py-2.5 text-xs">
-          <div class="flex flex-wrap items-center gap-4">
-            <label class="inline-flex cursor-pointer items-center gap-1.5 font-medium text-[#FFF6EC]">
-              <input id="chkHarmonized" type="checkbox" checked class="h-3.5 w-3.5 accent-[#FF5A1F]" />
-              <span class="h-2.5 w-2.5 rounded-full bg-[#FF5A1F] shadow-[0_0_8px_rgba(255,90,31,0.8)]"></span>
-              Harmonized Cluster
-            </label>
-            <label class="inline-flex cursor-pointer items-center gap-1.5 text-[#C9B5A6]">
-              <input id="chkModis" type="checkbox" checked class="h-3.5 w-3.5 accent-[#FFC53D]" />
-              <span class="h-2.5 w-2.5 rounded-full bg-[#FFC53D]"></span>
-              MODIS · 1 km
-            </label>
-            <label class="inline-flex cursor-pointer items-center gap-1.5 text-[#C9B5A6]">
-              <input id="chkViirs" type="checkbox" checked class="h-3.5 w-3.5 accent-[#5BB8FF]" />
-              <span class="h-2.5 w-2.5 rounded-full bg-[#5BB8FF]"></span>
-              VIIRS · 375 m
-            </label>
-          </div>
-          <span class="font-mono text-[10px] uppercase tracking-widest text-[#7A6255]">Three.js · FIRMS schema</span>
+        <div class="panel pointer-events-auto inline-flex w-fit flex-wrap items-center gap-3.5 rounded-full px-4 py-2 text-xs backdrop-blur-md">
+          <label class="inline-flex cursor-pointer items-center gap-1.5 font-medium text-[#FFF6EC]">
+            <input id="chkHarmonized" type="checkbox" checked class="h-3.5 w-3.5 accent-[#FF5A1F]" />
+            <span class="h-2.5 w-2.5 rounded-full bg-[#FF5A1F] shadow-[0_0_8px_rgba(255,90,31,0.8)]"></span>
+            Harmonized Cluster
+          </label>
+          <label class="inline-flex cursor-pointer items-center gap-1.5 text-[#C9B5A6]">
+            <input id="chkModis" type="checkbox" checked class="h-3.5 w-3.5 accent-[#FFC53D]" />
+            <span class="h-2.5 w-2.5 rounded-full bg-[#FFC53D]"></span>
+            MODIS · 1 km
+          </label>
+          <label class="inline-flex cursor-pointer items-center gap-1.5 text-[#C9B5A6]">
+            <input id="chkViirs" type="checkbox" checked class="h-3.5 w-3.5 accent-[#5BB8FF]" />
+            <span class="h-2.5 w-2.5 rounded-full bg-[#5BB8FF]"></span>
+            VIIRS · 375 m
+          </label>
+          <span class="hidden sm:inline-block font-mono text-[10px] uppercase tracking-wider text-[#7A6255] border-l border-[#3A2B23] pl-3">Three.js</span>
         </div>
       </div>
 
       <!-- ─── RIGHT COLUMN ─── -->
       <div class="pointer-events-auto flex flex-col gap-3 lg:col-span-5">
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-3.5">
           <div class="panel panel-lift kpi-card c-ember pop-in d1">
             <div class="flex items-start justify-between gap-2">
               <span class="kpi-label"><span aria-hidden="true">🔥</span> Fire Clusters</span>
@@ -510,7 +519,7 @@
         </div>
 
         <!-- Calendar -->
-        <div class="panel panel-lift rounded-[18px] p-4 pop-in d3">
+        <div class="panel panel-lift rounded-[18px] p-3.5 sm:p-4 pop-in d3">
           <div class="mb-3 flex flex-wrap items-start justify-between gap-2">
             <div>
               <h2 class="font-display text-[15px] font-extrabold tracking-tight text-[#FFF6EC]">
@@ -581,8 +590,8 @@
                 <th class="px-3 py-2.5 font-semibold">Event ID</th>
                 <th class="px-3 py-2.5 font-semibold">Location</th>
                 <th class="px-3 py-2.5 font-semibold">Sensors</th>
-                <th class="px-3 py-2.5 font-semibold">FRP</th>
-                <th class="px-3 py-2.5 font-semibold">Conf.</th>
+                <th class="px-3 py-2.5 font-semibold text-right">FRP</th>
+                <th class="px-3 py-2.5 font-semibold text-right">Conf.</th>
               </tr>
             </thead>
             <tbody id="hotspotTableBody" class="divide-y divide-[#2A1F1A] text-[#FFF6EC]"></tbody>
@@ -718,10 +727,11 @@
 
   const scene  = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 100);
-  camera.position.set(0, 0.12, 3.55);
+  camera.position.set(0, 0.10, 3.45);
 
   const globeGroup = new THREE.Group();
-  globeGroup.position.x = window.innerWidth >= 1024 ? -0.62 : 0;
+  globeGroup.position.x = window.innerWidth >= 1024 ? -0.70 : 0;
+  globeGroup.position.y = window.innerWidth >= 1024 ? 0.08 : 0;
   scene.add(globeGroup);
 
   const starGeo = new THREE.BufferGeometry();
@@ -866,7 +876,8 @@
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
-    globeGroup.position.x = window.innerWidth >= 1024 ? -0.62 : 0;
+    globeGroup.position.x = window.innerWidth >= 1024 ? -0.70 : 0;
+    globeGroup.position.y = window.innerWidth >= 1024 ? 0.08 : 0;
   });
 
   (function animateGlobe() {
@@ -1027,7 +1038,7 @@
     const allVals = YEARS.flatMap(y => matrix[y]);
     const maxVal = Math.max(...allVals);
 
-    let html = '<div class="grid grid-cols-[34px_repeat(12,minmax(0,1fr))] gap-1 text-[10px]">';
+    let html = '<div class="grid grid-cols-[34px_repeat(12,minmax(0,1fr))] gap-[4px] text-[10px]">';
     html += '<div></div>';
     MONTHS.forEach(m => {
       html += `<div class="pb-1 text-center font-semibold text-[#7A6255]">${m}</div>`;
@@ -1040,8 +1051,8 @@
         const bg = getRampColor(val, maxVal, state.colorRamp);
         const isSelected = yr === state.selectedYear && mIdx === state.selectedMonth;
         html += `<button type="button" data-year="${yr}" data-month="${mIdx}" title="${m} ${yr}: ${val} harmonized events"
-          class="heatmap-cell h-[22px] text-[9px] font-bold text-white/90 ${isSelected ? 'selected' : ''}"
-          style="background-color:${bg}">${val}</button>`;
+          class="heatmap-cell flex h-[22px] items-center justify-center text-[9px] font-bold text-white/90 ${isSelected ? 'selected' : ''}"
+          style="background-color:${bg}"><span class="cal-val">${val}</span></button>`;
       });
     });
     html += '</div>';
@@ -1075,9 +1086,10 @@
             label: `${state.selectedYear} Harmonized`,
             data: yearSeries,
             backgroundColor: MONTHS.map((_, i) =>
-              i === state.selectedMonth ? '#FF5A1F' : 'rgba(255, 90, 31, 0.28)'),
-            borderColor: '#FF8C42',
-            borderWidth: 1,
+              i === state.selectedMonth ? '#FF5A1F' : 'rgba(255, 140, 66, 0.16)'),
+            borderColor: MONTHS.map((_, i) =>
+              i === state.selectedMonth ? '#FF8C42' : 'transparent'),
+            borderWidth: MONTHS.map((_, i) => (i === state.selectedMonth ? 1.5 : 0)),
             borderRadius: 4,
             borderSkipped: false
           },
@@ -1087,7 +1099,7 @@
             type: 'line',
             borderColor: '#FFC53D',
             backgroundColor: 'rgba(255, 197, 61, 0.10)',
-            borderWidth: 2,
+            borderWidth: 1.5,
             borderDash: [4, 4],
             pointRadius: 2.5,
             pointBackgroundColor: '#FFC53D',
@@ -1125,12 +1137,12 @@
         scales: {
           x: {
             ticks: { color: '#7A6255', font: { size: 10, family: 'DM Sans' } },
-            grid: { color: 'rgba(255, 197, 61, 0.05)' },
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
             border: { display: false }
           },
           y: {
             ticks: { color: '#7A6255', font: { size: 10, family: 'DM Sans' } },
-            grid: { color: 'rgba(255, 197, 61, 0.06)' },
+            grid: { color: 'rgba(255, 255, 255, 0.05)' },
             border: { display: false }
           }
         }
@@ -1147,7 +1159,7 @@
     }
     tbody.innerHTML = events.map(ev => `
       <tr>
-        <td class="px-3 py-2 font-mono text-[10.5px] font-bold text-[#FFC53D]">${ev.id}</td>
+        <td class="px-3 py-2 font-mono text-[10.5px] text-[#8A7566]">${ev.id}</td>
         <td class="px-3 py-2">
           <div class="font-medium text-[#FFF6EC]">${ev.area}</div>
           <div class="font-mono text-[9.5px] text-[#7A6255]">${ev.lat.toFixed(3)}, ${ev.lng.toFixed(3)}</div>
@@ -1157,9 +1169,9 @@
           <span class="text-[#5A4237]">·</span>
           <span class="text-[#5BB8FF]">${ev.viirs}</span>
         </td>
-        <td class="whitespace-nowrap px-3 py-2 font-mono text-[11px] text-[#FFF6EC]">${ev.frp} MW</td>
-        <td class="px-3 py-2">
-          <span class="rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wide ${
+        <td class="whitespace-nowrap px-3 py-2 text-right font-mono text-[11px] font-bold tabular-nums text-[#FFF6EC]">${ev.frp} MW</td>
+        <td class="whitespace-nowrap px-3 py-2 text-right">
+          <span class="inline-block rounded-full px-2 py-0.5 text-[9.5px] font-bold uppercase tracking-wide ${
             ev.conf === 'High'
               ? 'bg-[#FF5A1F]/15 text-[#FF8C42] ring-1 ring-[#FF5A1F]/35'
               : 'bg-[#3A2B23]/50 text-[#A8907F] ring-1 ring-[#3A2B23]'
