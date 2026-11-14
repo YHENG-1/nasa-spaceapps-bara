@@ -21,10 +21,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY backend/requirements.txt ./backend/requirements.txt
 RUN pip install --no-cache-dir -r backend/requirements.txt
 
-# Copy backend code, data cache, and frontend files
-COPY backend ./backend
-COPY "Bara — MODIS & VIIRS 3D Fire Observatory.html" ./
-COPY index.html ./
+# Copy application code and assets
+COPY . ./
 
 # Create non-root user for security best practices
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser ${APP_HOME}
@@ -35,7 +33,7 @@ EXPOSE 8000
 
 # Healthcheck to ensure FastAPI API is responsive
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:${PORT}/api/health || exit 1
+    CMD curl -f http://localhost:${PORT:-8000}/api/health || exit 1
 
 # Start FastAPI application with Uvicorn
-CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT}"]
+CMD ["sh", "-c", "uvicorn backend.main:app --host 0.0.0.0 --port ${PORT:-8000}"]
