@@ -11,13 +11,10 @@ import io
 import os
 import sys
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
-BACKEND_DIR = Path(__file__).resolve().parent
-PROJECT_ROOT = BACKEND_DIR.parent
-if str(BACKEND_DIR) not in sys.path:
-    sys.path.insert(0, str(BACKEND_DIR))
+# Ensure backend directory is in sys.path
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Query, Response
@@ -31,6 +28,9 @@ from harmonizer import (
     compute_monthly_anomalies,
     compute_monthly_medians,
 )
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+INDEX_PATH = os.path.join(BASE_DIR, "index.html")
 
 app = FastAPI(
     title="Bara NASA Space Apps API",
@@ -46,6 +46,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/", include_in_schema=False)
+async def serve_index():
+    """Serve the root 3D Fire Observatory interface."""
+    if os.path.exists(INDEX_PATH):
+        return FileResponse(INDEX_PATH)
+    return {"message": "Bara NASA Space Apps API is running. index.html not found."}
 
 # Initialize singletons
 firms_client = FirmsClient()
@@ -114,19 +121,6 @@ class CalendarResponse(BaseModel):
 # ==============================================================================
 # Endpoints
 # ==============================================================================
-
-@app.get("/")
-async def root():
-    """Serve the interactive 3D frontend if index.html is present."""
-    index_path = PROJECT_ROOT / "index.html"
-    if index_path.exists():
-        return FileResponse(str(index_path))
-    return {
-        "status": "online",
-        "name": "Bara — MODIS & VIIRS 3D Fire Observatory",
-        "docs_url": "/docs",
-    }
-
 
 @app.get("/api/health", response_model=HealthResponse)
 async def health_check():
