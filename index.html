@@ -921,7 +921,7 @@
   </div>
 
 <script>
-  window.API_BASE = window.API_BASE || 'http://localhost:8000';
+  window.API_BASE = window.API_BASE || (window.location.origin && window.location.origin.startsWith('http') ? window.location.origin : 'http://127.0.0.1:8000');
   const API_BASE = window.API_BASE;
 
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
