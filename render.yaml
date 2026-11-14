@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: bara-fire-observatory
+    runtime: python
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: NASA_FIRMS_MAP_KEY
+        sync: false
+    autoDeploy: true
+    healthCheckPath: /api/health

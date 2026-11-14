@@ -349,6 +349,17 @@
     background-position: right 10px center;
     padding-right: 26px;
   }
+
+  /* Custom AOI tooltip */
+  .aoi-tooltip {
+    background: rgba(25, 19, 17, 0.95);
+    border: 1px solid var(--ember);
+    color: var(--cream);
+    border-radius: 8px;
+    font-size: 11px;
+    padding: 5px 9px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6);
+  }
 </style>
 </head>
 <body class="min-h-screen antialiased selection:bg-orange-500/30">
@@ -373,6 +384,10 @@
           <div class="flex items-center gap-2.5">
             <h1 class="font-display text-[19px] font-extrabold tracking-tight text-[#FFF6EC]">Bara</h1>
             <span class="live-pill"><span class="live-dot"></span>Live</span>
+            <span id="backendStatusBadge" class="inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-2.5 py-0.5 text-[9.5px] font-semibold text-emerald-400 transition-colors" title="FastAPI Harmonization Engine Status">
+              <span id="backendStatusDot" class="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span id="backendStatusLabel">Checking API...</span>
+            </span>
           </div>
           <p class="text-[11px] leading-tight text-[#A8907F]">
             MODIS <span class="text-[#FF5A1F]">+</span> VIIRS · harmonized fire calendar
@@ -386,7 +401,12 @@
           <option value="johor">🇲🇾 Johor &amp; Southern Malaysia</option>
           <option value="kalimantan">🇮🇩 Central Kalimantan Peatlands</option>
           <option value="sea">🌏 Southeast Asia Regional</option>
+          <option value="custom">📍 Custom AOI (Bounding Box)...</option>
         </select>
+
+        <button id="btnOpenAoiModal" type="button" class="pill-btn" title="Specify custom West, South, East, North bounding box">
+          <span aria-hidden="true">📐</span> Custom AOI
+        </button>
 
         <div class="seg" role="group" aria-label="View mode">
           <button id="btnModeHarmonized" type="button" class="active">Harmonized</button>
@@ -440,7 +460,12 @@
         <!-- 2D map -->
         <div id="map2dWrapper" class="panel pointer-events-auto hidden overflow-hidden rounded-[18px]">
           <div class="flex items-center justify-between border-b border-[#3A2B23]/70 px-3.5 py-2 text-xs">
-            <span id="mapSubtitle" class="font-medium text-[#FFF6EC]">Johor &amp; Southern Malaysia</span>
+            <div class="flex items-center gap-2">
+              <span id="mapSubtitle" class="font-medium text-[#FFF6EC]">Johor &amp; Southern Malaysia</span>
+              <button id="btnMapCaptureAoi" type="button" class="pill-btn !py-0.5 !px-2 !text-[10.5px]" title="Set Custom AOI from current visible 2D map extent">
+                <span aria-hidden="true">📐</span> AOI from Map
+              </button>
+            </div>
             <div class="seg" role="group" aria-label="Basemap">
               <button id="btnBasemapDark" type="button" class="active">Dark</button>
               <button id="btnBasemapSat" type="button">Satellite</button>
@@ -599,7 +624,7 @@
     </footer>
   </main>
 
-  <!-- ══════════ MODAL ══════════ -->
+  <!-- ══════════ METHODOLOGY MODAL ══════════ -->
   <div id="pipelineModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
     <div class="panel-solid w-full max-w-lg p-6 shadow-2xl">
       <div class="flex items-center justify-between border-b border-[#3A2B23] pb-3">
@@ -625,7 +650,93 @@
     </div>
   </div>
 
+  <!-- ══════════ CUSTOM AOI MODAL ══════════ -->
+  <div id="aoiModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 p-4 backdrop-blur-sm">
+    <div class="panel-solid w-full max-w-lg p-6 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-[#3A2B23] pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="flex h-7 w-7 items-center justify-center rounded-lg bg-[#FF5A1F]/20 text-[#FF5A1F] text-sm">📐</div>
+          <div>
+            <h3 class="font-display text-base font-extrabold tracking-tight text-[#FFF6EC]">
+              Custom Area of Interest (AOI)
+            </h3>
+            <p class="text-[11px] text-[#A8907F]">Query NASA FIRMS MODIS &amp; VIIRS by Bounding Box</p>
+          </div>
+        </div>
+        <button id="btnCloseAoiModal" type="button"
+          class="flex h-7 w-7 items-center justify-center rounded-full text-lg leading-none text-[#A8907F] transition hover:bg-white/10 hover:text-white">&times;</button>
+      </div>
+
+      <div class="mt-4 space-y-4 text-xs text-[#C9B5A6]">
+        <p>Define bounding coordinates in WGS84 decimal degrees (<code class="text-[#FFC53D] font-mono">[West, South, East, North]</code>) to run the 1 km / 24h spatio-temporal harmonization engine for any location on Earth.</p>
+
+        <!-- Coordinates Box -->
+        <div class="rounded-xl border border-[#3A2B23] bg-[#0C0806]/85 p-3.5 space-y-2.5">
+          <!-- North -->
+          <div class="flex flex-col items-center">
+            <label class="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#A8907F]">North Latitude (°N)</label>
+            <input id="inputAoiNorth" type="number" step="0.0001" min="-90" max="90" value="2.6000"
+              class="w-36 rounded-lg border border-[#3A2B23] bg-[#191311] px-2.5 py-1 text-center font-mono text-xs text-[#FFF6EC] focus:border-[#FF5A1F] focus:outline-none" />
+          </div>
+
+          <!-- West and East -->
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex flex-col items-start">
+              <label class="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#A8907F]">West Longitude (°E)</label>
+              <input id="inputAoiWest" type="number" step="0.0001" min="-180" max="180" value="102.5000"
+                class="w-32 rounded-lg border border-[#3A2B23] bg-[#191311] px-2.5 py-1 text-center font-mono text-xs text-[#FFF6EC] focus:border-[#FF5A1F] focus:outline-none" />
+            </div>
+            <div class="text-[10px] font-mono text-[#7A6255] uppercase tracking-wider">[AOI BBOX]</div>
+            <div class="flex flex-col items-end">
+              <label class="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#A8907F]">East Longitude (°E)</label>
+              <input id="inputAoiEast" type="number" step="0.0001" min="-180" max="180" value="104.5000"
+                class="w-32 rounded-lg border border-[#3A2B23] bg-[#191311] px-2.5 py-1 text-center font-mono text-xs text-[#FFF6EC] focus:border-[#FF5A1F] focus:outline-none" />
+            </div>
+          </div>
+
+          <!-- South -->
+          <div class="flex flex-col items-center">
+            <label class="mb-1 text-[10px] font-bold uppercase tracking-wider text-[#A8907F]">South Latitude (°N)</label>
+            <input id="inputAoiSouth" type="number" step="0.0001" min="-90" max="90" value="1.2000"
+              class="w-36 rounded-lg border border-[#3A2B23] bg-[#191311] px-2.5 py-1 text-center font-mono text-xs text-[#FFF6EC] focus:border-[#FF5A1F] focus:outline-none" />
+          </div>
+        </div>
+
+        <!-- Presets -->
+        <div>
+          <div class="mb-1.5 flex items-center justify-between text-[10.5px]">
+            <span class="font-semibold text-[#A8907F]">Quick Presets:</span>
+            <button id="btnAoiFromCurrentMap" type="button" class="text-[#FF5A1F] hover:underline font-medium">
+              🗺️ Grab Current Map Bounds
+            </button>
+          </div>
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" class="aoi-preset-btn pill-btn !text-[10.5px] !py-1 !px-2.5" data-bbox="102.5,1.2,104.5,2.6" data-name="Johor & Southern Malaysia">🇲🇾 Johor</button>
+            <button type="button" class="aoi-preset-btn pill-btn !text-[10.5px] !py-1 !px-2.5" data-bbox="111.0,-3.5,115.5,-1.0" data-name="Central Kalimantan Peatlands">🇮🇩 Kalimantan</button>
+            <button type="button" class="aoi-preset-btn pill-btn !text-[10.5px] !py-1 !px-2.5" data-bbox="100.0,-1.0,103.5,2.5" data-name="Riau Peatlands">🇮🇩 Riau/Sumatra</button>
+            <button type="button" class="aoi-preset-btn pill-btn !text-[10.5px] !py-1 !px-2.5" data-bbox="95.0,-11.0,141.0,20.0" data-name="Southeast Asia Regional">🌏 SE Asia</button>
+            <button type="button" class="aoi-preset-btn pill-btn !text-[10.5px] !py-1 !px-2.5" data-bbox="-65.0,-10.0,-55.0,-2.0" data-name="Amazon Basin Peat/Forest">🇧🇷 Amazon Basin</button>
+          </div>
+        </div>
+
+        <div id="aoiErrorMsg" class="hidden rounded-lg bg-red-950/40 border border-red-500/40 p-2 text-xs text-red-300 font-medium"></div>
+      </div>
+
+      <div class="mt-5 flex items-center justify-between border-t border-[#3A2B23] pt-3.5">
+        <button id="btnCancelAoi" type="button" class="pill-btn text-xs">
+          Cancel
+        </button>
+        <button id="btnApplyAoi" type="button" class="pill-btn primary px-5 py-2 text-xs">
+          Apply AOI &amp; Harmonize
+        </button>
+      </div>
+    </div>
+  </div>
+
 <script>
+  window.API_BASE = window.API_BASE || 'http://localhost:8000';
+  const API_BASE = window.API_BASE;
+
   const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   const YEARS  = Array.from({ length: 12 }, (_, i) => 2015 + i);
 
@@ -634,6 +745,7 @@
       name: 'Johor & Southern Malaysia',
       center: [1.4655, 103.7578],
       zoom: 8,
+      bbox: [102.5, 1.2, 104.5, 2.6],
       coordsText: '1.4655° N, 103.7578° E',
       seasonalCurve: [18, 32, 48, 25, 14, 22, 39, 64, 78, 42, 16, 12],
       hotspotSeeds: [
@@ -650,6 +762,7 @@
       name: 'Central Kalimantan Peatlands',
       center: [-2.2267, 113.9442],
       zoom: 8,
+      bbox: [111.0, -3.5, 115.5, -1.0],
       coordsText: '2.2267° S, 113.9442° E',
       seasonalCurve: [30, 35, 55, 45, 70, 120, 210, 390, 520, 340, 95, 40],
       hotspotSeeds: [
@@ -665,6 +778,7 @@
       name: 'Southeast Asia Regional',
       center: [1.5, 108.0],
       zoom: 5,
+      bbox: [95.0, -11.0, 141.0, 20.0],
       coordsText: '1.5000° N, 108.0000° E',
       seasonalCurve: [180, 310, 540, 420, 260, 350, 580, 920, 1180, 760, 280, 190],
       hotspotSeeds: [
@@ -685,6 +799,8 @@
 
   const state = {
     region: 'johor',
+    customBbox: null, // [west, south, east, north]
+    customName: 'Custom AOI',
     basemap: 'dark',
     viewMode: 'harmonized',
     mapView: '3d',
@@ -692,8 +808,66 @@
     colorRamp: 'thermal',
     selectedYear: 2026,
     selectedMonth: 8,
-    confidenceFilter: 'all'
+    confidenceFilter: 'all',
+    backendConnected: null
   };
+
+  let currentMatrix = null;
+  let currentMedians = null;
+  let currentEvents = [];
+  let aoiRectangleLayer = null;
+  let chartInstance = null;
+  let isFetchingData = false;
+
+  const API_TIMEOUT_MS = 2500;
+  async function fetchWithTimeout(url, options = {}) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), API_TIMEOUT_MS);
+    try {
+      const resp = await fetch(url, { ...options, signal: controller.signal });
+      clearTimeout(timer);
+      return resp;
+    } catch (err) {
+      clearTimeout(timer);
+      throw err;
+    }
+  }
+
+  function updateStatusUi(isOnline, info = '') {
+    state.backendConnected = isOnline;
+    const badge = document.getElementById('backendStatusBadge');
+    const dot = document.getElementById('backendStatusDot');
+    const label = document.getElementById('backendStatusLabel');
+    if (!badge || !dot || !label) return;
+
+    if (isOnline) {
+      badge.className = 'inline-flex items-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-950/40 px-2.5 py-0.5 text-[9.5px] font-semibold text-emerald-400 transition-colors';
+      dot.className = 'h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse';
+      label.textContent = info || 'Backend: Active';
+      badge.title = 'FastAPI Harmonization Engine active at ' + API_BASE;
+    } else {
+      badge.className = 'inline-flex items-center gap-1.5 rounded-full border border-amber-500/30 bg-amber-950/30 px-2.5 py-0.5 text-[9.5px] font-semibold text-amber-300 transition-colors';
+      dot.className = 'h-1.5 w-1.5 rounded-full bg-amber-400';
+      label.textContent = 'Standalone Mode';
+      badge.title = `Backend not detected at ${API_BASE} — running client-side simulation & historical baseline models.`;
+    }
+  }
+
+  async function checkBackendHealth() {
+    try {
+      const resp = await fetchWithTimeout(`${API_BASE}/api/health`);
+      if (resp.ok) {
+        const data = await resp.json();
+        const info = data.firms_connected ? 'Backend: FIRMS Live' : 'Backend: Active';
+        updateStatusUi(true, info);
+        return true;
+      }
+    } catch (e) {
+      // offline
+    }
+    updateStatusUi(false);
+    return false;
+  }
 
   (function spawnEmbers() {
     const layer = document.getElementById('embers');
@@ -711,6 +885,7 @@
     }
   })();
 
+  /* ─── 3D Three.js Globe Setup ─── */
   const globeCanvas = document.getElementById('globeCanvas');
   const renderer = new THREE.WebGLRenderer({ canvas: globeCanvas, antialias: true, alpha: true });
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -747,7 +922,6 @@
   function drawEarthTexture(topoData) {
     texCtx.fillStyle = '#0F0A08';
     texCtx.fillRect(0, 0, texCanvas.width, texCanvas.height);
-
     texCtx.strokeStyle = 'rgba(255, 197, 61, 0.055)';
     texCtx.lineWidth = 1;
     for (let x = 0; x <= texCanvas.width; x += texCanvas.width / 24) {
@@ -821,20 +995,20 @@
         pin.position.copy(latLngToVec3(ev.lat, ev.lng, 1.16));
         hotspot3DGroup.add(pin);
       }
-      if (state.layers.modis) {
+      if (state.layers.modis && (ev.modis > 0 || state.viewMode === 'raw')) {
         const mPin = new THREE.Mesh(
           new THREE.SphereGeometry(0.014, 8, 8),
           new THREE.MeshBasicMaterial({ color: 0xffc53d })
         );
-        mPin.position.copy(latLngToVec3(ev.lat + 0.2, ev.lng - 0.2, 1.155));
+        mPin.position.copy(latLngToVec3(ev.lat + 0.12, ev.lng - 0.12, 1.155));
         hotspot3DGroup.add(mPin);
       }
-      if (state.layers.viirs) {
+      if (state.layers.viirs && (ev.viirs > 0 || state.viewMode === 'raw')) {
         const vPin = new THREE.Mesh(
           new THREE.SphereGeometry(0.011, 8, 8),
           new THREE.MeshBasicMaterial({ color: 0x5bb8ff })
         );
-        vPin.position.copy(latLngToVec3(ev.lat - 0.15, ev.lng + 0.15, 1.155));
+        vPin.position.copy(latLngToVec3(ev.lat - 0.10, ev.lng + 0.10, 1.155));
         hotspot3DGroup.add(vPin);
       }
     });
@@ -846,6 +1020,7 @@
   let prevMouse = { x: 0, y: 0 };
 
   function focusGlobeOnRegion(center) {
+    if (!center || center.length < 2) return;
     targetRotY = -((center[1] + 90) * Math.PI) / 180;
     targetRotX = (center[0] * Math.PI) / 180;
   }
@@ -879,35 +1054,7 @@
 
   focusGlobeOnRegion(REGIONS.johor.center);
 
-  function buildCalendarData(regionKey) {
-    const curve = REGIONS[regionKey].seasonalCurve;
-    const matrix = {};
-    YEARS.forEach(yr => {
-      matrix[yr] = MONTHS.map((_, mIdx) => {
-        const base = curve[mIdx];
-        const elNinoBoost = (yr === 2015 || yr === 2019 || yr === 2023 || yr === 2026) ? 1.42 : 0.88;
-        const jitter = 0.82 + (((yr * 13 + mIdx * 7) % 11) / 25);
-        return Math.max(2, Math.round(base * elNinoBoost * jitter));
-      });
-    });
-    return matrix;
-  }
-
-  function computeMedianSeries(matrix) {
-    return MONTHS.map((_, mIdx) => {
-      const vals = YEARS.filter(y => y < 2026).map(y => matrix[y][mIdx]).sort((a, b) => a - b);
-      const mid = Math.floor(vals.length / 2);
-      return vals.length % 2 !== 0 ? vals[mid] : Math.round((vals[mid - 1] + vals[mid]) / 2);
-    });
-  }
-
-  function getRampColor(val, maxVal, rampKey) {
-    const palette = RAMPS[rampKey];
-    const ratio = Math.min(1, Math.max(0, val / Math.max(1, maxVal)));
-    const idx = Math.min(palette.length - 1, Math.floor(ratio * palette.length));
-    return palette[idx];
-  }
-
+  /* ─── Leaflet 2D Map Setup ─── */
   const map = L.map('fireMap', { zoomControl: true })
     .setView(REGIONS.johor.center, REGIONS.johor.zoom);
 
@@ -924,10 +1071,123 @@
   tileLayers.dark.addTo(map);
   const markerGroup = L.layerGroup().addTo(map);
 
-  let chartInstance = null;
+  function updateAoiBoundingBoxDisplay() {
+    if (aoiRectangleLayer) {
+      map.removeLayer(aoiRectangleLayer);
+      aoiRectangleLayer = null;
+    }
+    if (state.region === 'custom' && state.customBbox && state.customBbox.length === 4) {
+      const [w, s, e, n] = state.customBbox;
+      aoiRectangleLayer = L.rectangle([[s, w], [n, e]], {
+        color: '#FF5A1F',
+        weight: 2,
+        fillColor: '#FF5A1F',
+        fillOpacity: 0.12,
+        dashArray: '6, 6'
+      }).bindTooltip(`<strong>${state.customName || 'Custom AOI'}</strong><br/>W: ${w.toFixed(2)}°, S: ${s.toFixed(2)}°, E: ${e.toFixed(2)}°, N: ${n.toFixed(2)}°`, {
+        sticky: true,
+        className: 'aoi-tooltip'
+      }).addTo(map);
+    }
+  }
 
-  function getFilteredEvents() {
-    const region = REGIONS[state.region];
+  /* ─── Data Access: Backend with Graceful Client Fallback ─── */
+  function computeMedianSeries(matrix) {
+    return MONTHS.map((_, mIdx) => {
+      const vals = YEARS.filter(y => y < 2026).map(y => matrix[y][mIdx]).sort((a, b) => a - b);
+      const mid = Math.floor(vals.length / 2);
+      return vals.length % 2 !== 0 ? vals[mid] : Math.round((vals[mid - 1] + vals[mid]) / 2);
+    });
+  }
+
+  function buildLocalCalendarData(regionKey, bbox) {
+    let curve;
+    if (regionKey === 'custom' && bbox && bbox.length === 4) {
+      const centerLat = (bbox[1] + bbox[3]) / 2;
+      const areaDeg = Math.max(0.2, (bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
+      const scale = Math.max(0.4, Math.min(8.0, areaDeg / 2.5));
+      if (centerLat > 12) {
+        curve = [15, 30, 60, 85, 70, 50, 40, 45, 65, 50, 25, 15].map(v => Math.max(2, Math.round(v * scale)));
+      } else if (centerLat < -8) {
+        curve = [12, 14, 20, 25, 45, 80, 150, 290, 380, 240, 60, 20].map(v => Math.max(2, Math.round(v * scale)));
+      } else {
+        curve = [20, 35, 52, 30, 25, 40, 75, 130, 170, 95, 30, 18].map(v => Math.max(2, Math.round(v * scale)));
+      }
+    } else {
+      const reg = REGIONS[regionKey] || REGIONS.johor;
+      curve = reg.seasonalCurve;
+    }
+
+    const matrix = {};
+    YEARS.forEach(yr => {
+      matrix[yr] = MONTHS.map((_, mIdx) => {
+        const base = curve[mIdx];
+        const elNinoBoost = (yr === 2015 || yr === 2019 || yr === 2023 || yr === 2026) ? 1.42 : 0.88;
+        const jitter = 0.82 + (((yr * 13 + mIdx * 7) % 11) / 25);
+        return Math.max(2, Math.round(base * elNinoBoost * jitter));
+      });
+    });
+    return matrix;
+  }
+
+  async function getCalendarData(regionKey, bbox) {
+    if (state.backendConnected !== false) {
+      try {
+        let url = `${API_BASE}/api/calendar?region=${encodeURIComponent(regionKey)}`;
+        if (bbox && bbox.length === 4) {
+          url += `&bbox=${bbox.join(',')}`;
+        }
+        const resp = await fetchWithTimeout(url);
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data && data.matrix) {
+            updateStatusUi(true);
+            const medians = data.medians || computeMedianSeries(data.matrix);
+            return { matrix: data.matrix, medians, source: 'backend' };
+          }
+        }
+      } catch (err) {
+        updateStatusUi(false);
+      }
+    }
+    const matrix = buildLocalCalendarData(regionKey, bbox);
+    const medians = computeMedianSeries(matrix);
+    return { matrix, medians, source: 'client' };
+  }
+
+  function getLocalFilteredEvents() {
+    if (state.region === 'custom' && state.customBbox && state.customBbox.length === 4) {
+      const [w, s, e, n] = state.customBbox;
+      const count = 7;
+      const monthScale = (state.selectedMonth >= 6 && state.selectedMonth <= 9) ? 1.25 : 0.85;
+      const yearScale  = (state.selectedYear === 2026 || state.selectedYear === 2023 || state.selectedYear === 2019) ? 1.15 : 0.9;
+      const events = [];
+      for (let i = 0; i < count; i++) {
+        const seedVal = Math.sin(state.selectedYear * 133 + (state.selectedMonth + 1) * 37 + (i + 1) * 19) * 10000;
+        const fracX = Math.abs(seedVal - Math.floor(seedVal));
+        const fracY = Math.abs(Math.sin(seedVal * 1.5) * 10000 - Math.floor(Math.sin(seedVal * 1.5) * 10000));
+        const lat = s + (n - s) * (0.15 + 0.70 * fracY);
+        const lng = w + (e - w) * (0.15 + 0.70 * fracX);
+        const modisCount = Math.floor(fracX * 3) + 1;
+        const viirsCount = modisCount * 2 + Math.floor(fracY * 3);
+        const frp = Number(((24 + fracY * 50) * monthScale * yearScale).toFixed(1));
+        const conf = fracX > 0.35 ? 'High' : 'Nominal';
+        events.push({
+          id: `BARA-AOI-${state.selectedYear}-${String(state.selectedMonth + 1).padStart(2, '0')}-${String(i + 1).padStart(3, '0')}`,
+          lat: Number(lat.toFixed(4)),
+          lng: Number(lng.toFixed(4)),
+          area: `${state.customName || 'Custom AOI'} Sector ${String.fromCharCode(65 + i)}`,
+          modis: modisCount,
+          viirs: viirsCount,
+          frp: frp,
+          conf: conf,
+          cluster_radius: Number((0.6 + fracX * 0.8).toFixed(2))
+        });
+      }
+      return events.filter(ev => state.confidenceFilter === 'all' || ev.conf.toLowerCase() === state.confidenceFilter);
+    }
+
+    const region = REGIONS[state.region] || REGIONS.johor;
     const monthScale = (state.selectedMonth >= 6 && state.selectedMonth <= 9) ? 1.25 : 0.85;
     const yearScale  = (state.selectedYear === 2026 || state.selectedYear === 2023 || state.selectedYear === 2019) ? 1.15 : 0.9;
     return region.hotspotSeeds
@@ -939,8 +1199,56 @@
       .filter(ev => state.confidenceFilter === 'all' || ev.conf.toLowerCase() === state.confidenceFilter);
   }
 
+  async function getHotspotEvents() {
+    const regionKey = state.region;
+    const year = state.selectedYear;
+    const month = state.selectedMonth + 1;
+    const conf = state.confidenceFilter;
+    const bbox = state.customBbox;
+
+    if (state.backendConnected !== false) {
+      try {
+        let url = `${API_BASE}/api/hotspots?region=${encodeURIComponent(regionKey)}&year=${year}&month=${month}&confidence=${encodeURIComponent(conf)}`;
+        if (bbox && bbox.length === 4) {
+          url += `&bbox=${bbox.join(',')}`;
+        }
+        const resp = await fetchWithTimeout(url);
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data && Array.isArray(data.events)) {
+            updateStatusUi(true);
+            return data.events.map((ev, idx) => ({
+              id: ev.id || `HRM-${year}-${String(month).padStart(2, '0')}-${String(idx + 1).padStart(3, '0')}`,
+              area: ev.area || (state.region === 'custom' ? `AOI Cluster [${Number(ev.lat).toFixed(3)}°N, ${Number(ev.lng).toFixed(3)}°E]` : 'Harmonized Peatland Zone'),
+              lat: Number(ev.lat),
+              lng: Number(ev.lng),
+              modis: ev.modis_count ?? ev.modis ?? 0,
+              viirs: ev.viirs_count ?? ev.viirs ?? 0,
+              frp: Number((Number(ev.frp || 0)).toFixed(1)),
+              conf: ev.conf || 'Nominal',
+              cluster_radius: ev.cluster_radius || null,
+              burn_area_km2: ev.burn_area_km2 || null
+            }));
+          }
+        }
+      } catch (err) {
+        updateStatusUi(false);
+      }
+    }
+    return getLocalFilteredEvents();
+  }
+
+  function getRampColor(val, maxVal, rampKey) {
+    const palette = RAMPS[rampKey];
+    const ratio = Math.min(1, Math.max(0, val / Math.max(1, maxVal)));
+    const idx = Math.min(palette.length - 1, Math.floor(ratio * palette.length));
+    return palette[idx];
+  }
+
   function renderMapMarkers(events) {
     markerGroup.clearLayers();
+    updateAoiBoundingBoxDisplay();
+
     events.forEach(ev => {
       if (state.layers.modis && ev.modis > 0) {
         for (let i = 0; i < Math.min(ev.modis, 3); i++) {
@@ -961,17 +1269,20 @@
         }
       }
       if (state.layers.harmonized && state.viewMode === 'harmonized') {
+        const radiusText = ev.cluster_radius ? `<br/><span style="color:#A8907F">Radius: ${ev.cluster_radius} km</span>` : '';
         L.circleMarker([ev.lat, ev.lng], {
           radius: 11, color: '#FF5A1F', fillColor: '#FF5A1F', fillOpacity: 0.4, weight: 2
-        }).bindPopup(`<div style="font-size:12px"><strong>${ev.id}</strong><br/>${ev.area} · ${ev.frp} MW</div>`).addTo(markerGroup);
+        }).bindPopup(`<div style="font-size:12px"><strong>${ev.id}</strong><br/>${ev.area}<br/><strong>${ev.frp} MW</strong> · MODIS: ${ev.modis}, VIIRS: ${ev.viirs}${radiusText}</div>`).addTo(markerGroup);
       }
     });
+
     update3DHotspots(events);
   }
 
   function renderCalendar(matrix) {
-    const allVals = YEARS.flatMap(y => matrix[y]);
-    const maxVal = Math.max(...allVals);
+    if (!matrix) return;
+    const allVals = YEARS.flatMap(y => matrix[y] || []);
+    const maxVal = Math.max(...allVals, 1);
 
     let html = '<div class="grid grid-cols-[34px_repeat(12,minmax(0,1fr))] gap-1 text-[10px]">';
     html += '<div></div>';
@@ -982,7 +1293,7 @@
     YEARS.slice().reverse().forEach(yr => {
       html += `<div class="flex items-center font-mono text-[10px] font-bold ${yr === state.selectedYear ? 'text-[#FFC53D]' : 'text-[#7A6255]'}">${yr}</div>`;
       MONTHS.forEach((m, mIdx) => {
-        const val = matrix[yr][mIdx];
+        const val = (matrix[yr] && matrix[yr][mIdx] !== undefined) ? matrix[yr][mIdx] : 0;
         const bg = getRampColor(val, maxVal, state.colorRamp);
         const isSelected = yr === state.selectedYear && mIdx === state.selectedMonth;
         html += `<button type="button" data-year="${yr}" data-month="${mIdx}" title="${m} ${yr}: ${val} harmonized events"
@@ -999,17 +1310,17 @@
       RAMPS[state.colorRamp].map(c => `<div class="flex-1" style="background-color:${c}"></div>`).join('');
 
     container.querySelectorAll('.heatmap-cell').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', async () => {
         state.selectedYear  = Number(btn.dataset.year);
         state.selectedMonth = Number(btn.dataset.month);
-        renderAll();
+        await renderAll(true);
       });
     });
   }
 
   function renderChart(matrix, medians) {
     const ctx = document.getElementById('comparisonChart').getContext('2d');
-    const yearSeries = matrix[state.selectedYear];
+    const yearSeries = (matrix && matrix[state.selectedYear]) ? matrix[state.selectedYear] : [];
     if (chartInstance) chartInstance.destroy();
 
     chartInstance = new Chart(ctx, {
@@ -1086,7 +1397,7 @@
 
   function renderTable(events) {
     const tbody = document.getElementById('hotspotTableBody');
-    if (events.length === 0) {
+    if (!events || events.length === 0) {
       tbody.innerHTML =
         '<tr><td colspan="5" class="px-3 py-8 text-center text-[#7A6255]">🔍 No events match this filter — try widening it.</td></tr>';
       return;
@@ -1096,7 +1407,7 @@
         <td class="px-3 py-2 font-mono text-[10.5px] font-bold text-[#FFC53D]">${ev.id}</td>
         <td class="px-3 py-2">
           <div class="font-medium text-[#FFF6EC]">${ev.area}</div>
-          <div class="font-mono text-[9.5px] text-[#7A6255]">${ev.lat.toFixed(3)}, ${ev.lng.toFixed(3)}</div>
+          <div class="font-mono text-[9.5px] text-[#7A6255]">${Number(ev.lat).toFixed(3)}, ${Number(ev.lng).toFixed(3)}</div>
         </td>
         <td class="whitespace-nowrap px-3 py-2 text-[11px]">
           <span class="text-[#FFC53D]">${ev.modis}</span>
@@ -1116,13 +1427,15 @@
   }
 
   function renderKpis(matrix, medians, events) {
-    const harmonizedCount = matrix[state.selectedYear][state.selectedMonth];
-    const medianVal = medians[state.selectedMonth];
+    if (!matrix || !matrix[state.selectedYear]) return;
+    const harmonizedCount = matrix[state.selectedYear][state.selectedMonth] || 0;
+    const medianVal = (medians && medians[state.selectedMonth] !== undefined) ? medians[state.selectedMonth] : 0;
     const diffPct = medianVal > 0 ? Math.round(((harmonizedCount - medianVal) / medianVal) * 100) : 0;
-    const modisRaw = Math.round(harmonizedCount * 0.72);
-    const viirsRaw = Math.round(harmonizedCount * 2.15);
+
+    const modisRaw = events.reduce((sum, e) => sum + (e.modis || 0), 0) || Math.round(harmonizedCount * 0.72);
+    const viirsRaw = events.reduce((sum, e) => sum + (e.viirs || 0), 0) || Math.round(harmonizedCount * 2.15);
     const avgFrp = events.length > 0
-      ? (events.reduce((s, e) => s + e.frp, 0) / events.length).toFixed(1)
+      ? (events.reduce((s, e) => s + (e.frp || 0), 0) / events.length).toFixed(1)
       : '0.0';
 
     document.getElementById('kpiPeriodBadge').textContent = `${MONTHS[state.selectedMonth]} ${state.selectedYear}`;
@@ -1143,20 +1456,51 @@
       `${MONTHS[state.selectedMonth]} ${state.selectedYear} · ${harmonizedCount} events`;
     document.getElementById('chartSubtitle').textContent =
       `Comparing ${state.selectedYear} harmonized events against the 2003–2025 baseline`;
-    document.getElementById('aoiCoordsLabel').textContent = REGIONS[state.region].coordsText;
+
+    const regionName = state.region === 'custom'
+      ? (state.customName || 'Custom Bounding Box')
+      : (REGIONS[state.region]?.name || 'Johor & Southern Malaysia');
+
+    const coordsText = state.region === 'custom' && state.customBbox
+      ? `W: ${state.customBbox[0]}°, S: ${state.customBbox[1]}°, E: ${state.customBbox[2]}°, N: ${state.customBbox[3]}°`
+      : (REGIONS[state.region]?.coordsText || '1.4655° N, 103.7578° E');
+
+    document.getElementById('aoiCoordsLabel').textContent = coordsText;
     document.getElementById('mapSubtitle').textContent =
-      `${REGIONS[state.region].name} · ${MONTHS[state.selectedMonth]} ${state.selectedYear}`;
+      `${regionName} · ${MONTHS[state.selectedMonth]} ${state.selectedYear}`;
   }
 
-  function renderAll() {
-    const matrix = buildCalendarData(state.region);
-    const medians = computeMedianSeries(matrix);
-    const events = getFilteredEvents();
-    renderKpis(matrix, medians, events);
-    renderCalendar(matrix);
-    renderChart(matrix, medians);
-    renderMapMarkers(events);
-    renderTable(events);
+  async function renderAll(skipCalendarFetch = false) {
+    if (isFetchingData) return;
+    isFetchingData = true;
+
+    try {
+      if (!skipCalendarFetch || !currentMatrix) {
+        const calData = await getCalendarData(state.region, state.customBbox);
+        currentMatrix = calData.matrix;
+        currentMedians = calData.medians;
+      }
+      currentEvents = await getHotspotEvents();
+
+      renderKpis(currentMatrix, currentMedians, currentEvents);
+      renderCalendar(currentMatrix);
+      renderChart(currentMatrix, currentMedians);
+      renderMapMarkers(currentEvents);
+      renderTable(currentEvents);
+    } catch (err) {
+      console.warn('[Bara] renderAll error, fallback to local models:', err);
+      currentMatrix = buildLocalCalendarData(state.region, state.customBbox);
+      currentMedians = computeMedianSeries(currentMatrix);
+      currentEvents = getLocalFilteredEvents();
+
+      renderKpis(currentMatrix, currentMedians, currentEvents);
+      renderCalendar(currentMatrix);
+      renderChart(currentMatrix, currentMedians);
+      renderMapMarkers(currentEvents);
+      renderTable(currentEvents);
+    } finally {
+      isFetchingData = false;
+    }
   }
 
   function setActiveSegment(activeId, inactiveIds) {
@@ -1176,11 +1520,21 @@
     }, 4500);
   }
 
+  /* ─── Controls & Event Listeners ─── */
   document.getElementById('regionSelect').addEventListener('change', (e) => {
-    state.region = e.target.value;
+    const val = e.target.value;
+    if (val === 'custom') {
+      openAoiModal();
+      return;
+    }
+    state.region = val;
+    state.customBbox = null;
+    updateAoiBoundingBoxDisplay();
     const r = REGIONS[state.region];
-    map.setView(r.center, r.zoom);
-    focusGlobeOnRegion(r.center);
+    if (r) {
+      map.setView(r.center, r.zoom);
+      focusGlobeOnRegion(r.center);
+    }
     renderAll();
   });
 
@@ -1204,7 +1558,7 @@
     state.layers.harmonized = true;
     document.getElementById('chkHarmonized').checked = true;
     setActiveSegment('btnModeHarmonized', ['btnModeRaw']);
-    renderMapMarkers(getFilteredEvents());
+    renderMapMarkers(currentEvents);
   });
 
   document.getElementById('btnModeRaw').addEventListener('click', () => {
@@ -1214,7 +1568,7 @@
     document.getElementById('chkModis').checked = true;
     document.getElementById('chkViirs').checked = true;
     setActiveSegment('btnModeRaw', ['btnModeHarmonized']);
-    renderMapMarkers(getFilteredEvents());
+    renderMapMarkers(currentEvents);
   });
 
   document.getElementById('btnBasemapDark').addEventListener('click', () => {
@@ -1236,45 +1590,81 @@
   ['Harmonized', 'Modis', 'Viirs'].forEach(key => {
     document.getElementById(`chk${key}`).addEventListener('change', (e) => {
       state.layers[key.toLowerCase()] = e.target.checked;
-      renderMapMarkers(getFilteredEvents());
+      renderMapMarkers(currentEvents);
     });
   });
 
   document.getElementById('btnRampThermal').addEventListener('click', () => {
     state.colorRamp = 'thermal';
     setActiveSegment('btnRampThermal', ['btnRampViridis']);
-    renderAll();
+    renderCalendar(currentMatrix);
   });
 
   document.getElementById('btnRampViridis').addEventListener('click', () => {
     state.colorRamp = 'viridis';
     setActiveSegment('btnRampViridis', ['btnRampThermal']);
-    renderAll();
+    renderCalendar(currentMatrix);
   });
 
-  document.getElementById('confidenceFilter').addEventListener('change', (e) => {
+  document.getElementById('confidenceFilter').addEventListener('change', async (e) => {
     state.confidenceFilter = e.target.value;
-    renderAll();
+    currentEvents = await getHotspotEvents();
+    renderKpis(currentMatrix, currentMedians, currentEvents);
+    renderMapMarkers(currentEvents);
+    renderTable(currentEvents);
   });
 
-  document.getElementById('btnExportCsv').addEventListener('click', () => {
-    const events = getFilteredEvents();
-    const header = 'event_id,area,latitude,longitude,modis_count,viirs_count,calibrated_frp_mw,confidence,year,month\n';
+  /* ─── CSV Export with Backend Stream & Client Fallback ─── */
+  document.getElementById('btnExportCsv').addEventListener('click', async () => {
+    const region = state.region;
+    const year = state.selectedYear;
+    const month = state.selectedMonth + 1;
+    const bbox = state.customBbox;
+
+    if (state.backendConnected !== false) {
+      try {
+        let exportUrl = `${API_BASE}/api/export?region=${encodeURIComponent(region)}&year=${year}&month=${month}&confidence=${encodeURIComponent(state.confidenceFilter)}`;
+        if (bbox && bbox.length === 4) {
+          exportUrl += `&bbox=${bbox.join(',')}`;
+        }
+        const resp = await fetchWithTimeout(exportUrl, { method: 'GET' });
+        if (resp.ok) {
+          const blob = await resp.blob();
+          const downloadUrl = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = `bara_harmonized_${region}_${year}_M${String(month).padStart(2, '0')}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(downloadUrl);
+          showToast(`Exported harmonized CSV from FastAPI backend for ${MONTHS[state.selectedMonth]} ${year}.`);
+          return;
+        }
+      } catch (e) {
+        // Fall back to client CSV
+      }
+    }
+
+    const events = (currentEvents && currentEvents.length > 0) ? currentEvents : getLocalFilteredEvents();
+    const header = 'event_id,area,latitude,longitude,modis_count,viirs_count,calibrated_frp_mw,confidence,year,month
+';
     const rows = events.map(ev =>
       `${ev.id},"${ev.area}",${ev.lat},${ev.lng},${ev.modis},${ev.viirs},${ev.frp},${ev.conf},${state.selectedYear},${MONTHS[state.selectedMonth]}`
-    ).join('\n');
+    ).join('
+');
 
     const blob = new Blob([header + rows], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `bara_${state.region}_${state.selectedYear}_${MONTHS[state.selectedMonth]}.csv`;
+    a.download = `bara_harmonized_${state.region}_${state.selectedYear}_${MONTHS[state.selectedMonth]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    showToast(`Exported ${events.length} harmonized events for ${MONTHS[state.selectedMonth]} ${state.selectedYear}.`);
+    showToast(`Exported ${events.length} harmonized events for ${MONTHS[state.selectedMonth]} ${state.selectedYear} (client export).`);
   });
 
   document.getElementById('btnCloseToast').addEventListener('click', () => {
@@ -1282,31 +1672,151 @@
     document.getElementById('toastBanner').classList.remove('flex');
   });
 
-  const modal = document.getElementById('pipelineModal');
+  /* ─── Methodology Modal ─── */
+  const pipelineModal = document.getElementById('pipelineModal');
   document.getElementById('btnPipelineModal').addEventListener('click', () => {
-    modal.classList.remove('hidden');
-    modal.classList.add('flex');
+    pipelineModal.classList.remove('hidden');
+    pipelineModal.classList.add('flex');
   });
   ['btnCloseModal', 'btnModalGotIt'].forEach(id => {
     document.getElementById(id).addEventListener('click', () => {
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
+      pipelineModal.classList.add('hidden');
+      pipelineModal.classList.remove('flex');
     });
   });
-  modal.addEventListener('click', (e) => {
-    if (e.target === modal) {
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
-    }
-  });
-  window.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
-      modal.classList.add('hidden');
-      modal.classList.remove('flex');
+  pipelineModal.addEventListener('click', (e) => {
+    if (e.target === pipelineModal) {
+      pipelineModal.classList.add('hidden');
+      pipelineModal.classList.remove('flex');
     }
   });
 
-  window.addEventListener('load', renderAll);
+  /* ─── Custom AOI Modal & Tool ─── */
+  const aoiModal = document.getElementById('aoiModal');
+
+  function openAoiModal() {
+    aoiModal.classList.remove('hidden');
+    aoiModal.classList.add('flex');
+    if (state.customBbox && state.customBbox.length === 4) {
+      document.getElementById('inputAoiWest').value = state.customBbox[0];
+      document.getElementById('inputAoiSouth').value = state.customBbox[1];
+      document.getElementById('inputAoiEast').value = state.customBbox[2];
+      document.getElementById('inputAoiNorth').value = state.customBbox[3];
+    }
+    document.getElementById('aoiErrorMsg').classList.add('hidden');
+  }
+
+  function closeAoiModal() {
+    aoiModal.classList.add('hidden');
+    aoiModal.classList.remove('flex');
+    if (state.region !== 'custom') {
+      document.getElementById('regionSelect').value = state.region;
+    }
+  }
+
+  document.getElementById('btnOpenAoiModal').addEventListener('click', openAoiModal);
+  document.getElementById('btnCloseAoiModal').addEventListener('click', closeAoiModal);
+  document.getElementById('btnCancelAoi').addEventListener('click', closeAoiModal);
+  aoiModal.addEventListener('click', (e) => {
+    if (e.target === aoiModal) closeAoiModal();
+  });
+
+  document.querySelectorAll('.aoi-preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const parts = btn.dataset.bbox.split(',').map(Number);
+      document.getElementById('inputAoiWest').value = parts[0];
+      document.getElementById('inputAoiSouth').value = parts[1];
+      document.getElementById('inputAoiEast').value = parts[2];
+      document.getElementById('inputAoiNorth').value = parts[3];
+      state.customName = btn.dataset.name || 'Custom AOI';
+    });
+  });
+
+  function captureMapBoundsToAoiInputs() {
+    const b = map.getBounds();
+    const w = Number(Math.max(-180, Math.min(180, b.getWest())).toFixed(4));
+    const s = Number(Math.max(-90, Math.min(90, b.getSouth())).toFixed(4));
+    const e = Number(Math.max(-180, Math.min(180, b.getEast())).toFixed(4));
+    const n = Number(Math.max(-90, Math.min(90, b.getNorth())).toFixed(4));
+    document.getElementById('inputAoiWest').value = w;
+    document.getElementById('inputAoiSouth').value = s;
+    document.getElementById('inputAoiEast').value = e;
+    document.getElementById('inputAoiNorth').value = n;
+    state.customName = `Map Extent [${s}°, ${w}°]`;
+  }
+
+  document.getElementById('btnAoiFromCurrentMap').addEventListener('click', captureMapBoundsToAoiInputs);
+  const btnMapCaptureAoi = document.getElementById('btnMapCaptureAoi');
+  if (btnMapCaptureAoi) {
+    btnMapCaptureAoi.addEventListener('click', () => {
+      captureMapBoundsToAoiInputs();
+      applyAoiCoordinates();
+    });
+  }
+
+  function applyAoiCoordinates() {
+    const w = parseFloat(document.getElementById('inputAoiWest').value);
+    const s = parseFloat(document.getElementById('inputAoiSouth').value);
+    const e = parseFloat(document.getElementById('inputAoiEast').value);
+    const n = parseFloat(document.getElementById('inputAoiNorth').value);
+    const errEl = document.getElementById('aoiErrorMsg');
+
+    if (isNaN(w) || isNaN(s) || isNaN(e) || isNaN(n)) {
+      errEl.textContent = 'Please enter valid decimal coordinates for all 4 boundaries.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+    if (s >= n) {
+      errEl.textContent = 'South Latitude must be strictly less than North Latitude.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+    if (w >= e) {
+      errEl.textContent = 'West Longitude must be less than East Longitude.';
+      errEl.classList.remove('hidden');
+      return;
+    }
+    if (s < -90 || n > 90 || w < -180 || e > 180) {
+      errEl.textContent = 'Coordinates out of bounds: Lat [-90, 90], Lng [-180, 180].';
+      errEl.classList.remove('hidden');
+      return;
+    }
+
+    errEl.classList.add('hidden');
+    state.region = 'custom';
+    state.customBbox = [w, s, e, n];
+    document.getElementById('regionSelect').value = 'custom';
+
+    const bounds = [[s, w], [n, e]];
+    map.fitBounds(bounds, { padding: [30, 30] });
+    const center = [(s + n) / 2, (w + e) / 2];
+    focusGlobeOnRegion(center);
+
+    updateAoiBoundingBoxDisplay();
+    closeAoiModal();
+    showToast(`Custom AOI applied: [${w}°, ${s}°, ${e}°, ${n}°]`);
+    renderAll();
+  }
+
+  document.getElementById('btnApplyAoi').addEventListener('click', applyAoiCoordinates);
+
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (!pipelineModal.classList.contains('hidden')) {
+        pipelineModal.classList.add('hidden');
+        pipelineModal.classList.remove('flex');
+      }
+      if (!aoiModal.classList.contains('hidden')) {
+        closeAoiModal();
+      }
+    }
+  });
+
+  /* ─── Initialization ─── */
+  window.addEventListener('load', async () => {
+    await checkBackendHealth();
+    await renderAll();
+  });
 </script>
 </body>
 </html>
