@@ -81,7 +81,7 @@ class FirmsClient:
     """NASA FIRMS API integration with intelligent offline fallback caching."""
 
     def __init__(self, map_key: Optional[str] = None):
-        self.map_key = map_key or os.getenv("FIRMS_MAP_KEY", "").strip()
+        self.map_key = map_key or os.getenv("FIRMS_MAP_KEY", "46bcd8c8eed1f12d19b06fb86343426a").strip()
         DATA_DIR.mkdir(parents=True, exist_ok=True)
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -120,19 +120,32 @@ class FirmsClient:
         except (TypeError, ValueError):
             days = 1
 
+        # Check local cache first to minimize NASA rate limits
+        cache_key = f"{source}_{w}_{s}_{e}_{n}_{days}_{date_str or 'latest'}.csv".replace(",", "_")
+        cache_file = CACHE_DIR / cache_key
+        if cache_file.exists():
+            try:
+                cached_df = pd.read_csv(cache_file)
+                if not cached_df.empty:
+                    return cached_df
+            except Exception:
+                pass
+
         if self.is_connected():
             url = f"{FIRMS_AREA_URL}/{self.map_key}/{source}/{w},{s},{e},{n}/{days}"
             if date_str:
                 url += f"/{date_str}"
 
             try:
-                async with httpx.AsyncClient(timeout=10.0) as client:
+                async with httpx.AsyncClient(timeout=15.0) as client:
                     resp = await client.get(url)
                     if resp.status_code == 200 and "latitude" in resp.text:
                         csv_df = pd.read_csv(io.StringIO(resp.text))
-                        # Tag sensor column
-                        csv_df["sensor"] = "MODIS" if "MODIS" in source else "VIIRS"
-                        return csv_df
+                        if not csv_df.empty:
+                            csv_df["sensor"] = "MODIS" if "MODIS" in source else "VIIRS"
+                            # Save to disk cache for fast re-access
+                            csv_df.to_csv(cache_file, index=False)
+                            return csv_df
                     else:
                         logger.warning(
                             f"FIRMS API responded with status {resp.status_code}: {resp.text[:100]}"
@@ -140,7 +153,7 @@ class FirmsClient:
             except Exception as ex:
                 logger.warning(f"Error fetching from NASA FIRMS: {ex}")
 
-        # Fallback to local data generator
+        # Fallback to local data generator if date is outside NRT window or API unavailable
         return self._generate_fallback_raw_detections(source, bbox, date_str)
 
     async def fetch_harmonized_inputs(
@@ -154,7 +167,7 @@ class FirmsClient:
         them into a single standardized DataFrame ready for clustering.
         """
         modis_task = self.fetch_area_hotspots("MODIS_NRT", bbox, days, date_str)
-        viirs_task = self.fetch_area_hotspots("VIIRS_SNPP_NRT", bbox, days, date_str)
+        viirs_task = self.fetch_area_hotspots("VIIRS_NOAA20_NRT", bbox, days, date_str)
 
         modis_df = await modis_task
         viirs_df = await viirs_task
