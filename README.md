@@ -1,6 +1,14 @@
 <div align="center">
 
-# 🛰️ BARA (巴拉)
+<pre>
+   ██████╗  █████╗ ██████╗  █████╗ 
+   ██╔══██╗██╔══██╗██╔══██╗██╔══██╗
+   ██████╔╝███████║██████╔╝███████║
+   ██╔══██╗██╔══██║██╔══██╗██╔══██║
+   ██████╔╝██║  ██║██║  ██║██║  ██║
+   ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝
+</pre>
+
 ### *Spatio-Temporal Harmonization of MODIS & VIIRS Hot Spots*
 **Bridging Multi-Decadal Earth Observations into a Unified, Anomaly-Aware Wildfire & Peatland Observatory**
 
