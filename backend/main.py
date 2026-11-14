@@ -9,13 +9,20 @@ Exposes REST endpoints for:
 
 import io
 import os
+import sys
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+BACKEND_DIR = Path(__file__).resolve().parent
+PROJECT_ROOT = BACKEND_DIR.parent
+if str(BACKEND_DIR) not in sys.path:
+    sys.path.insert(0, str(BACKEND_DIR))
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel, Field
 
 from firms_client import REGION_BOUNDS, FirmsClient
@@ -107,6 +114,19 @@ class CalendarResponse(BaseModel):
 # ==============================================================================
 # Endpoints
 # ==============================================================================
+
+@app.get("/")
+async def root():
+    """Serve the interactive 3D frontend if index.html is present."""
+    index_path = PROJECT_ROOT / "index.html"
+    if index_path.exists():
+        return FileResponse(str(index_path))
+    return {
+        "status": "online",
+        "name": "Bara — MODIS & VIIRS 3D Fire Observatory",
+        "docs_url": "/docs",
+    }
+
 
 @app.get("/api/health", response_model=HealthResponse)
 async def health_check():
