@@ -41,21 +41,7 @@
 
 ## Project Pitch Video
 
-<div align="center">
-
-<video src="assets/bara-pitch.mp4" width="100%" controls poster="assets/video_preview.jpg">
-  Your browser does not support the video tag.
-</video>
-
-<br/>
-
-[![Watch Bara 25s Pitch Video](assets/video_preview.jpg)](https://github.com/YHENG-1/nasa-spaceapps-bara/raw/master/assets/bara-pitch.mp4)
-
-**[Watch / Download Pitch Video (assets/bara-pitch.mp4)](assets/bara-pitch.mp4)** • **[Direct Raw Video Stream](https://github.com/YHENG-1/nasa-spaceapps-bara/raw/master/assets/bara-pitch.mp4)** • **[Video Source Code](video-pitch/)**
-
-*25-second pitch: satellite conflict analysis, spatio-temporal DBSCAN harmonization, and real-time 3D climate observatory.*
-
-</div>
+https://github.com/user-attachments/assets/917b86ab-ad84-462b-bf98-f4c21eb9284c
 
 ---
 
