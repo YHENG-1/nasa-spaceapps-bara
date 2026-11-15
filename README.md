@@ -24,10 +24,6 @@
 
 <img src="assets/bara_preview.png" alt="Bara 3D Fire Observatory Live Preview" width="100%" style="border-radius: 12px; box-shadow: 0 16px 48px rgba(0,0,0,0.5);"/>
 
-<br/><br/>
-
-[ **Launch Live Observatory** ](https://nasa-spaceapps-bara.onrender.com) • [ **Watch Pitch Video** ](#project-pitch-video) • [ **7-Slide Pitch Deck** ](submission/PITCH_DECK.md) • [ **Demo Video Script** ](submission/DEMO_VIDEO_SCRIPT.md) • [ **Submission Form** ](submission/PROJECT_SUBMISSION_FORM.md)
-
 </div>
 
 ---
