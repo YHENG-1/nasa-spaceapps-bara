@@ -35,6 +35,12 @@ from firms_client import FirmsClient, REGION_BOUNDS
 from main import app
 
 
+@pytest.fixture(scope="module")
+def client():
+    with TestClient(app) as c:
+        yield c
+
+
 # ==============================================================================
 # 1. DBSCAN & Spatio-Temporal Clustering Tests
 # ==============================================================================
@@ -246,11 +252,6 @@ class TestHistoricalBaselineAndAnomalies:
 class TestFastAPIEndpoints:
     """Verify all REST API endpoints with TestClient."""
 
-    @pytest.fixture(scope="class")
-    def client(self):
-        with TestClient(app) as c:
-            yield c
-
     def test_health_endpoint(self, client):
         """GET /api/health returns status ok, firms connection status, and event counts."""
         res = client.get("/api/health")
@@ -364,11 +365,6 @@ class TestFastAPIEndpoints:
 
 class TestCORSAndErrorHandling:
     """Verify CORS headers and robustness against malformed inputs."""
-
-    @pytest.fixture(scope="class")
-    def client(self):
-        with TestClient(app) as c:
-            yield c
 
     def test_cors_headers_present(self, client):
         """API endpoints must return CORS Access-Control-Allow-Origin header."""

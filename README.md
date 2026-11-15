@@ -15,6 +15,7 @@
 [![NASA Space Apps Challenge](https://img.shields.io/badge/NASA%20Space%20Apps-2026%20Johor%20Bahru-blue.svg?style=for-the-badge&logo=nasa&logoColor=white)](https://www.spaceappschallenge.org/2026/local-events/johor-bahru/)
 [![Challenge Track](https://img.shields.io/badge/Challenge-Harmonization%20of%20MODIS%20%26%20VIIRS-orange.svg?style=for-the-badge)](https://www.spaceappschallenge.org/2026/challenges/modis-and-viirs-hot-spots/)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Render%20Cloud-success.svg?style=for-the-badge&logo=render&logoColor=white)](https://nasa-spaceapps-bara.onrender.com)
+[![CI Tests](https://img.shields.io/github/actions/workflow/status/YHENG-1/nasa-spaceapps-bara/test.yml?branch=master&label=CI%20Tests&style=for-the-badge&logo=githubactions&logoColor=white)](https://github.com/YHENG-1/nasa-spaceapps-bara/actions/workflows/test.yml)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI%20%7C%20Python%203.11-009688.svg?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Three.js](https://img.shields.io/badge/3D%20Globe-Three.js%20WebGL-black.svg?style=for-the-badge&logo=three.js&logoColor=white)](https://threejs.org)
 [![Leaflet](https://img.shields.io/badge/2D%20Map-Leaflet%20JS-199900.svg?style=for-the-badge&logo=leaflet&logoColor=white)](https://leafletjs.com)
