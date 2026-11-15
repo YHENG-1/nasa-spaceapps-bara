@@ -219,9 +219,6 @@ docker-compose up --build
 - **Local Event:** Johor Bahru, Malaysia
 - **Live Demo URL:** [https://nasa-spaceapps-bara.onrender.com](https://nasa-spaceapps-bara.onrender.com)
 - **GitHub Repository:** [https://github.com/YHENG-1/nasa-spaceapps-bara](https://github.com/YHENG-1/nasa-spaceapps-bara)
-- **7-Slide Pitch Deck:** [`submission/PITCH_DECK.md`](submission/PITCH_DECK.md)
-- **Demo Video Script:** [`submission/DEMO_VIDEO_SCRIPT.md`](submission/DEMO_VIDEO_SCRIPT.md)
-- **Official Submission Form:** [`submission/PROJECT_SUBMISSION_FORM.md`](submission/PROJECT_SUBMISSION_FORM.md)
 - **License:** Open-source under the [MIT License](LICENSE).
 
 <div align="center">
