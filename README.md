@@ -26,20 +26,40 @@
 
 <br/><br/>
 
-[ 🌐 **Launch Live Observatory** ](https://nasa-spaceapps-bara.onrender.com) • [ 📑 **7-Slide Pitch Deck** ](submission/PITCH_DECK.md) • [ 🎬 **Video Script** ](submission/DEMO_VIDEO_SCRIPT.md) • [ 📋 **Submission Form** ](submission/PROJECT_SUBMISSION_FORM.md)
+[ **Launch Live Observatory** ](https://nasa-spaceapps-bara.onrender.com) • [ **Watch Pitch Video** ](#project-pitch-video) • [ **7-Slide Pitch Deck** ](submission/PITCH_DECK.md) • [ **Demo Video Script** ](submission/DEMO_VIDEO_SCRIPT.md) • [ **Submission Form** ](submission/PROJECT_SUBMISSION_FORM.md)
 
 </div>
 
 ---
 
-> 🏆 **Event:** 2026 NASA International Space Apps Challenge — Johor Bahru Local Event  
-> 🎯 **Challenge Track:** [Harmonization of MODIS and VIIRS Hot Spots](https://www.spaceappschallenge.org/2026/challenges/modis-and-viirs-hot-spots/)  
-> ⏰ **Submission Deadline:** Sunday, November 15, 2026, 11:59 PM MYT  
-> 📖 **Etymology:** *Bara* is the Malay word for **"Ember / Smoldering Fire"** — representing the stealthy, carbon-dense underground peat fires that plague Southeast Asia's tropical rainforests and regional air quality.
+> **Event:** 2026 NASA International Space Apps Challenge — Johor Bahru Local Event  
+> **Challenge Track:** [Harmonization of MODIS and VIIRS Hot Spots](https://www.spaceappschallenge.org/2026/challenges/modis-and-viirs-hot-spots/)  
+> **Submission Deadline:** Sunday, November 15, 2026, 11:59 PM MYT  
+> **Etymology:** *Bara* is the Malay word for **"Ember / Smoldering Fire"** — representing the stealthy, carbon-dense underground peat fires that plague Southeast Asia's tropical rainforests and regional air quality.
 
 ---
 
-## 📌 Executive Summary
+## Project Pitch Video
+
+<div align="center">
+
+<video src="assets/bara-pitch.mp4" width="100%" controls poster="assets/video_preview.jpg">
+  Your browser does not support the video tag.
+</video>
+
+<br/>
+
+[![Watch Bara 25s Pitch Video](assets/video_preview.jpg)](https://github.com/YHENG-1/nasa-spaceapps-bara/raw/master/assets/bara-pitch.mp4)
+
+**[Watch / Download Pitch Video (assets/bara-pitch.mp4)](assets/bara-pitch.mp4)** • **[Direct Raw Video Stream](https://github.com/YHENG-1/nasa-spaceapps-bara/raw/master/assets/bara-pitch.mp4)** • **[Video Source Code](video-pitch/)**
+
+*25-second pitch: satellite conflict analysis, spatio-temporal DBSCAN harmonization, and real-time 3D climate observatory.*
+
+</div>
+
+---
+
+## Executive Summary
 
 Satellite remote sensing is the frontline defense against catastrophic wildfires. However, the international disaster management community faces a persistent **multi-sensor discrepancy**:
 
@@ -51,7 +71,7 @@ Satellite remote sensing is the frontline defense against catastrophic wildfires
 
 ---
 
-## 🔬 The Multi-Sensor Dilemma
+## The Multi-Sensor Dilemma
 
 | Comparison Dimension | MODIS (Terra & Aqua) | VIIRS (Suomi-NPP & NOAA-20) | The Operational Consequence |
 | :--- | :--- | :--- | :--- |
@@ -63,20 +83,20 @@ Satellite remote sensing is the frontline defense against catastrophic wildfires
 
 ---
 
-## 🚀 Key Innovations & Features
+## Key Innovations & Features
 
-- **🛡️ Spatio-Temporal DBSCAN Harmonization:** Clusters overlapping detections using spherical Haversine distance ($\epsilon = 1.0\text{ km}$) within a sliding $\Delta t \le 24\text{ hour}$ diurnal window. Eliminates double-counting while maintaining a granular audit of each sensor's contribution.
-- **🔥 FRP-Weighted Energy Centroid:** Weights cluster coordinates by Fire Radiative Power (MW), anchoring the true location to the combustion core rather than the geometric average of fragmented pixel edges.
-- **📊 23-Year Climatological Baseline & Anomaly Engine:** Synthesizes calibrated MODIS archive data (2003–2025) into monthly median baselines. Computes percentage anomaly ($\Delta\%$) to instantly isolate extreme El Niño drought events from regular agricultural clearing.
-- **🌍 Dual 3D/2D Synchronized Observatory:**
+- **Spatio-Temporal DBSCAN Harmonization:** Clusters overlapping detections using spherical Haversine distance ($\epsilon = 1.0\text{ km}$) within a sliding $\Delta t \le 24\text{ hour}$ diurnal window. Eliminates double-counting while maintaining a granular audit of each sensor's contribution.
+- **FRP-Weighted Energy Centroid:** Weights cluster coordinates by Fire Radiative Power (MW), anchoring the true location to the combustion core rather than the geometric average of fragmented pixel edges.
+- **23-Year Climatological Baseline & Anomaly Engine:** Synthesizes calibrated MODIS archive data (2003–2025) into monthly median baselines. Computes percentage anomaly ($\Delta\%$) to instantly isolate extreme El Niño drought events from regular agricultural clearing.
+- **Dual 3D/2D Synchronized Observatory:**
   - **3D Planetary Globe (Three.js WebGL):** Real continent topography (`world-atlas`), atmospheric glow, real-time coordinate tracking, and automated regional camera focus.
   - **2D Cartographic Inspector (Leaflet + Esri):** High-resolution satellite basemaps with an instant **Harmonized vs. Raw Sensors** comparison toggle and custom bounding-box queries.
-- **📅 Decadal Burning Activity Heatmap Calendar:** Interactive 12-month $\times$ 12-year (2015–2026) matrix with **Thermal** and colorblind-safe **Viridis** palettes. Tap any cell to time-travel and inspect fire event logs.
-- **⚡ Live NASA FIRMS Integration & Resilient Caching:** Direct connection to NASA ESDIS Area API for near-real-time satellite feeds, backed by 796,000+ pre-cached historical records for instant zero-latency responses.
+- **Decadal Burning Activity Heatmap Calendar:** Interactive 12-month $\times$ 12-year (2015–2026) matrix with **Thermal** and colorblind-safe **Viridis** palettes. Tap any cell to time-travel and inspect fire event logs.
+- **Live NASA FIRMS Integration & Resilient Caching:** Direct connection to NASA ESDIS Area API for near-real-time satellite feeds, backed by 796,000+ pre-cached historical records for instant zero-latency responses.
 
 ---
 
-## 🏗️ System Architecture
+## System Architecture
 
 ```mermaid
 flowchart TD
@@ -113,7 +133,7 @@ flowchart TD
 
 ---
 
-## 🔬 Mathematical Formulation
+## Mathematical Formulation
 
 ### 1. Spherical Haversine DBSCAN Clustering
 Hotspot detections $\mathbf{x}_i = (\phi_i, \lambda_i, t_i)$ are clustered using Great-Circle distance on the WGS-84 reference sphere:
@@ -137,7 +157,7 @@ $$\text{Anomaly (\%)} = \frac{E_{\text{harmonized}}(y, m) - M_m}{M_m} \times 100
 
 ---
 
-## 📊 Empirical Validation & Performance
+## Empirical Validation & Performance
 
 | Evaluation Metric | Raw Unharmonized Data | Bara Harmonized Output | Operational Significance |
 | :--- | :--- | :--- | :--- |
@@ -149,11 +169,11 @@ $$\text{Anomaly (\%)} = \frac{E_{\text{harmonized}}(y, m) - M_m}{M_m} \times 100
 
 ---
 
-## ⚡ Quick Start Guide
+## Quick Start Guide
 
 ### Option A: Open the Live Cloud Deployment (Zero Setup)
-Visit the live observatory deployed on Render (Singapore Cluster):  
-👉 **[https://nasa-spaceapps-bara.onrender.com](https://nasa-spaceapps-bara.onrender.com)**
+Visit the live observatory deployed on Render:  
+**[https://nasa-spaceapps-bara.onrender.com](https://nasa-spaceapps-bara.onrender.com)**
 
 ---
 
@@ -174,7 +194,7 @@ cp .env.example .env
 # 4. Start the FastAPI backend
 python -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload
 ```
-Open **[http://localhost:8000](http://localhost:8000)** in your browser!
+Open **[http://localhost:8000](http://localhost:8000)** in your browser.
 
 ---
 
@@ -186,7 +206,7 @@ docker-compose up --build
 
 ---
 
-## 📡 REST API Reference
+## REST API Reference
 
 | Endpoint | Method | Parameters | Description |
 | :--- | :--- | :--- | :--- |
@@ -197,7 +217,7 @@ docker-compose up --build
 
 ---
 
-## 🛰️ NASA Data Sources & Official Citations
+## NASA Data Sources & Official Citations
 
 1. **NASA FIRMS (Fire Information for Resource Management System):**
    - Near Real-Time (NRT) MODIS and VIIRS active fire data distributed by NASA ESDIS.
@@ -211,7 +231,7 @@ docker-compose up --build
 
 ---
 
-## 👥 NASA Space Apps Challenge 2026 Deliverables
+## NASA Space Apps Challenge 2026 Deliverables
 
 - **Challenge:** Harmonization of MODIS and VIIRS Hot Spots
 - **Local Event:** Johor Bahru, Malaysia
@@ -223,5 +243,5 @@ docker-compose up --build
 - **License:** Open-source under the [MIT License](LICENSE).
 
 <div align="center">
-<sub>Built with 🛰️ by Team Bara for the 2026 NASA Space Apps Challenge (Johor Bahru).</sub>
+<sub>Built by Team Bara for the 2026 NASA Space Apps Challenge (Johor Bahru).</sub>
 </div>

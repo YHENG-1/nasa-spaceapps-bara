@@ -47,3 +47,9 @@ backend/data/cache/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Video Pitch Node & Render Artifacts
+video-pitch/
+bara-pitch.mp4
+.remotion/
+
